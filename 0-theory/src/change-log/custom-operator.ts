@@ -1,3 +1,34 @@
+// Из блока по паттерну (./pattern.ts), если захочется посмотреть на влияние оператора rxJS на родительский поток
+// const sequence$ = new Observable<number>((subscriber: Subscriber<number>) => {
+//     console.log('CREATE');
+//     let count = 0;
+
+//     const intervalId = setInterval(() => {
+//         // console.log('setInterval', count);
+//         console.log('new counter', count);
+
+//         if (count === 5) {
+//             subscriber.complete();
+//             console.log('COMPLETE');
+
+//             // subscriber.error('count === 5');
+//             // console.log('ERROR');
+
+//             return;
+//         }
+
+//         subscriber.next(count);
+//         console.log('NEXT');
+
+//         count += 1;
+//     }, 1000);
+
+//     return () => {
+//         clearInterval(intervalId);
+//         console.log('DESTROY');
+//     }
+// });
+
 // class DoubleSubscriber extends SafeSubscriber<number> {
 //     next(value: number) {
 //         super.next(value * 2);
