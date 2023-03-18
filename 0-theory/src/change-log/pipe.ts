@@ -1,3 +1,20 @@
+// Перекачевало из ./custom-operator
+// function myMap<T, U>(cb: (value: T) => U): OperatorFunction<T, U> {
+//     return (source$: Observable<T>): Observable<U> => new Observable(subscriber => {
+//         const subscription = source$.subscribe({
+//             next: value => {
+//                 subscriber.next(cb(value));
+//             },
+//             complete: subscriber.complete.bind(subscriber),
+//             error: subscriber.error.bind(subscriber),
+//         });
+
+//         return () => {
+//             subscription.unsubscribe();
+//         }
+//     })
+// }
+
 // function doubleFilter(source$: Observable<number>): Observable<number> {
 //     return source$.pipe(
 //         myMap(value => value * 2),
