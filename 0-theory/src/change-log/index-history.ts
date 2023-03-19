@@ -383,3 +383,307 @@
 //         startSource$ as Observable<any>,
 //     ) as Observable<U>;
 // }
+
+// function request$<T>(value: T): Observable<T> {
+//     return of(value);
+// }
+
+// const streamHOO$ = interval(1000).pipe(
+//     map(value => request$(value)),
+//     mergeAll(),
+// )
+
+// const stream$ = interval(1000).pipe(
+//     // map(value => request$(value)),
+//     // mergeAll(),
+//     mergeMap(value => request$(value)),
+// )
+
+// map + ...All === ...Map
+// map + mergeAll === mergeMap
+// map + switchAll === switchMap
+
+// stream$.subscribe(value => {
+//     terminalLog(value);
+// })
+
+// mergeMap
+// const source$ = interval(1000)
+
+// source$.pipe(
+//     take(4),
+//     mergeMap(
+//         count => interval(500).pipe(
+//             take(20),
+//             tap(value => {
+//                 console.log(`tap ${count}: ${value}`)
+//             })
+//         ),
+//         1,
+//     )
+// ).subscribe(terminalLog);
+
+// (----------) = 1000ms
+// - = 100ms
+
+// source$: ----------0----------1----------2----------3|
+// mergeMap: (count) => -(count: 0)-(count: 1)-(count: 0)|
+//          -----------(0: 0)-(0: 1)-(0: 2)------(1: 0)-(1: 1)-(1: 2)------0-1-2------0-1-2|
+
+// switchMap
+// const source$ = interval(1000)
+
+// source$.pipe(
+//     take(4),
+//     switchMap(count => interval(500).pipe(
+//         take(20),
+//         tap(value => {
+//             console.log(`tap ${count}: ${value}`)
+//         })
+//     ))
+// ).subscribe(terminalLog);
+
+// concatMap
+// const source$ = interval(1000)
+
+// source$.pipe(
+//     take(4),
+//     concatMap(count => interval(500).pipe(
+//         take(20),
+//         tap(value => {
+//             console.log(`tap ${count}: ${value}`)
+//         })
+//     ))
+// ).subscribe(terminalLog);
+
+// exaustMap
+// const source$ = interval(1000)
+
+// source$.pipe(
+//     take(50),
+//     exhaustMap(count => interval(500).pipe(
+//         take(20),
+//         tap(value => {
+//             console.log(`tap ${count}: ${value}`)
+//         })
+//     ))
+// ).subscribe(terminalLog);
+
+// const tick$ = interval(500);
+// const data$ = of('1', '2', '3', 4, '5');
+// const stream$ = zip(tick$, data$);
+
+// function calculate$(data: any): Observable<string> {
+//     return typeof data === 'string'
+//         ? of(data.toUpperCase())
+//         : throwError(() => 'Error custom');
+// }
+
+// stream$
+//     .pipe(
+//         switchMap(([_, data]) => calculate$(data).pipe(
+//             catchError(error => {
+//                 console.log('catchError', error);
+    
+//                 return of('0');
+//             }),
+//         )),
+//         tap({
+//             next: console.log,
+//             error: console.log,
+//         }),
+//         map(string => string[0]),
+//     )
+//     .subscribe({
+//         next: value => {
+//             terminalLog(value);
+//         },
+//         error: error => {
+//             terminalLog(`error: ${error}`);
+//         },
+//         complete: () => {
+//             terminalLog(`complete`);
+//         }
+//     })
+
+// stream$.pipe(
+//     switchMap(([_, data]) => calculate$(data).pipe(
+//         // catchError((err, obs) => {
+//         //     console.warn('catchError main', err);
+
+//         //     return obs.pipe(
+//         //         catchError((err) => {
+//         //             console.warn('catchError child', err);
+
+//         //             return EMPTY;
+//         //         }),
+//         //     );
+//         // }),
+//     )),
+//     retry({
+//         count: 3,
+//         delay: 4000,
+//     } as RetryConfig),
+//     // catchError(error => {
+//     //     console.log('catchError', error);
+
+//     //     return NEVER;
+//     // }),
+// )
+// .subscribe({
+//     next: value => {
+//         terminalLog(value);
+//     },
+//     error: error => {
+//         terminalLog(`error: ${error}`);
+//     },
+//     complete: () => {
+//         terminalLog(`complete`);
+//     }
+// })
+
+// EMPTY: |
+// NEVER: --------------------------
+// THROW("throwError()"): X
+
+// Subject = Observable + Observer(Subscriber)
+
+// const stream$ = new AsyncSubject<number>();
+
+// stream$.subscribe(value => {
+//     terminalLog(`Subscribe 1: ${value}`);
+// });
+
+// stream$.next(1);
+// stream$.next(2);
+// stream$.next(3);
+
+// setTimeout(() => {
+//     stream$.next(4);
+//     stream$.next(5);
+//     stream$.next(6);
+// }, 2000);
+
+// setTimeout(() => {
+//     stream$.subscribe(value => {
+//         terminalLog(`Subscribe 2: ${value}`);
+//     });
+
+//     stream$.next(7);
+//     stream$.next(8);
+//     stream$.next(9);
+// }, 4000);
+
+// setTimeout(() => {
+//     stream$.complete();
+// }, 5000)
+
+// function getItems<T>(url: string): Observable<T> {
+//     let asyncSubject: AsyncSubject<T>;
+
+//     return new Observable(subscriber => {
+//         if (!asyncSubject) {
+//             asyncSubject = new AsyncSubject<T>();
+
+//             ajax<T>({
+//                 url,
+//                 crossDomain: true,
+//             })
+//                 .pipe(map(({response}) => response))
+//                 .subscribe(asyncSubject);
+//         }
+
+//         const subscription = asyncSubject.subscribe(subscriber);
+
+//         return () => {
+//             subscription.unsubscribe();
+//         }
+//     })
+//     // return ajax<T>({
+//     //     url,
+//     //     crossDomain: true,
+//     // }).pipe(map(({response}) => response))
+// };
+
+// const items$ = getItems('https://learn.javascript.ru/courses/groups/api/participants?key=r1v5uj');
+
+// items$.subscribe(console.log);
+
+// setTimeout(() => {
+//     items$.subscribe(console.log);
+// }, 4000)
+
+// const subject = new Subject();
+
+// const stream$ = interval(1000).pipe(
+//     // multicast(subject),
+//     // publish(), // publish = multicast + Subject
+//     // refCount(),
+//     take(3),
+//     tap(console.log),
+//     share({
+//         connector: () => new Subject(),
+//         resetOnComplete: true,
+//         resetOnError: true,
+//         resetOnRefCountZero: true,
+//     }),
+// );
+
+// const subscription = new Subscription();
+
+// subscription.add(stream$.subscribe(value => {
+//     terminalLog(`Sub 1: ${value}`);
+// }));
+
+// setTimeout(() => {
+//     subscription.add(stream$.subscribe(value => {
+//         terminalLog(`Sub 2: ${value}`);
+//     }))
+// }, 3000);
+
+// setTimeout(() => {
+//     subscription.unsubscribe();
+// }, 5000);
+
+// setTimeout(() => {
+//     stream$.subscribe(value => {
+//         terminalLog(`Sub 3: ${value}`);
+//     })
+// }, 7000);
+
+// const indexesArray = Array.from({length: 10}).map((_, i) => i);
+
+// interval(1000).subscribe(terminalLog);
+// from(indexesArray.map(v => `Old ${v}`)).subscribe(terminalLog);
+// from(indexesArray.map(v => `New ${v}`)).subscribe(terminalLog); // indexesArray.map(v => `New ${v}`).forEach(terminalLog)
+
+// subscriber => {
+//     [].forEach(value => subscriber.next(value))
+// }
+
+// scheduled(indexesArray.map(v => `New ${v}`), asyncScheduler).subscribe(terminalLog);
+// scheduled(indexesArray.map(v => `Old ${v}`), asyncScheduler).subscribe(terminalLog);
+
+
+// from(indexesArray)
+//     .pipe(
+//         tap(() => {
+//             console.log('from operator');
+//         }),
+//         observeOn(asyncScheduler),
+//         tap(() => {
+//             console.log('before async scheduler');
+//         }),
+//         subscribeOn(asapScheduler),
+//     )
+//     .subscribe(console.log);
+
+// from(indexesArray.map(v => `Old ${v}`))
+//     .subscribe(console.log);
+
+// const stream1$ = scheduled([1, 2], asapScheduler);
+// const stream2$ = scheduled([5], asyncScheduler);
+
+// const sequence$ = combineLatest([stream1$, stream2$]);
+
+// sequence$.subscribe(console.log);
