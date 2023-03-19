@@ -1,4 +1,4 @@
-import { filter, fromEvent, map, merge, tap, zip } from 'rxjs';
+import { filter, fromEvent, map, merge, Observable, tap, zip } from 'rxjs';
 import '../../assets/css/style.css';
 
 const down$ = merge(
@@ -16,13 +16,23 @@ function getXPosition(event: MouseEvent | TouchEvent): number {
         : event.changedTouches.item(0)!.clientX;
 }
 
-export const swipe$ = zip(
-    down$.pipe(map(getXPosition)),
-    up$.pipe(map(getXPosition))
-).pipe(
-    map(([start, end]) => start - end),
-    // tap(value => {
-    //     console.log('diff', value);
-    // }),
-    filter(diff => Math.abs(diff) > 30),
-)
+export const swipe$ = swipeFn$(
+    down$,
+    up$,
+);
+
+export function swipeFn$(
+    downEvent$: Observable<MouseEvent | TouchEvent>,
+    upEvent$: Observable<MouseEvent | TouchEvent>,
+): Observable<number> {
+    return zip(
+        downEvent$.pipe(map(getXPosition)),
+        upEvent$.pipe(map(getXPosition))
+    ).pipe(
+        map(([start, end]) => start - end),
+        // tap(value => {
+        //     console.log('diff', value);
+        // }),
+        filter<number>(diff => Math.abs(diff) > 30),
+    );
+}
